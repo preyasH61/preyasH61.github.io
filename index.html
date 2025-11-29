@@ -25,18 +25,68 @@
             color: var(--text-primary);
             line-height: 1.6;
             scroll-behavior: smooth;
+            overflow-x: hidden; /* Prevent horizontal scroll from animations */
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Utility Class for Scroll Animation */
+        .hidden-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .show-section {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Utility */
         .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-        .section-title { font-size: 2rem; margin-bottom: 2rem; border-left: 5px solid var(--accent); padding-left: 15px; margin-top: 5rem; }
+        .section-title { 
+            font-size: 2rem; 
+            margin-bottom: 2rem; 
+            border-left: 5px solid var(--accent); 
+            padding-left: 15px; 
+            margin-top: 5rem;
+        }
         a { text-decoration: none; color: inherit; transition: 0.3s; }
         
         /* Navigation */
-        nav { padding: 20px 0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-color); z-index: 100; border-bottom: 1px solid #1e293b; }
-        .logo { font-weight: bold; font-size: 1.5rem; color: var(--accent); }
-        .nav-links a { margin-left: 20px; color: var(--text-secondary); font-weight: 500; }
+        nav { 
+            padding: 15px 0; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            background: rgba(15, 23, 42, 0.95); /* Slight transparency */
+            backdrop-filter: blur(10px); /* Glass effect */
+            z-index: 100; 
+            border-bottom: 1px solid #1e293b; 
+        }
+        .logo { font-weight: bold; font-size: 1.5rem; color: var(--accent); cursor: pointer; }
+        .nav-links a { margin-left: 20px; color: var(--text-secondary); font-weight: 500; position: relative; }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--accent);
+            transition: width 0.3s;
+        }
         .nav-links a:hover { color: var(--accent); }
+        .nav-links a:hover::after { width: 100%; }
 
         /* Hero Section */
         .hero {
@@ -48,8 +98,19 @@
             flex-direction: column;
             padding-top: 2rem;
         }
-        .hero h1 { font-size: 3.5rem; margin-bottom: 1rem; line-height: 1.2; }
-        .hero p { font-size: 1.25rem; color: var(--text-secondary); max-width: 700px; margin-bottom: 2rem; }
+        .hero h1 { 
+            font-size: 3.5rem; 
+            margin-bottom: 1rem; 
+            line-height: 1.2; 
+            animation: fadeIn 1s ease-out;
+        }
+        .hero p { 
+            font-size: 1.25rem; 
+            color: var(--text-secondary); 
+            max-width: 700px; 
+            margin-bottom: 2rem; 
+            animation: fadeIn 1.5s ease-out;
+        }
         .btn {
             display: inline-block;
             padding: 12px 30px;
@@ -58,19 +119,35 @@
             border-radius: 5px;
             font-weight: bold;
             margin: 0 10px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 0%; height: 100%;
+            background: rgba(255,255,255,0.2);
+            transition: width 0.3s;
+            z-index: -1;
+        }
+        .btn:hover::before { width: 100%; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); }
+
         .btn-outline {
             background: transparent;
             border: 1px solid var(--accent);
             color: var(--accent);
         }
-        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-outline:hover {
+            background: rgba(56, 189, 248, 0.1);
+        }
 
         /* Terminal Window Style */
         .terminal {
             background: #0d1117;
             border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             font-family: 'Courier New', monospace;
             overflow: hidden;
             margin: 3rem 0;
@@ -78,6 +155,7 @@
             text-align: left;
             width: 100%;
             max-width: 800px;
+            animation: fadeIn 2s ease-out;
         }
         .terminal-header {
             background: #161b22;
@@ -90,10 +168,17 @@
         .red { background: #ff5f56; }
         .yellow { background: #ffbd2e; }
         .green { background: #27c93f; }
-        .terminal-body { padding: 20px; color: var(--text-primary); }
-        .cmd { color: var(--code-green); }
-        .output { color: var(--text-secondary); margin-bottom: 15px; display: block; }
-
+        .terminal-body { padding: 20px; color: var(--text-primary); min-height: 200px; }
+        
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: var(--code-green);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+        
         /* Experience Timeline */
         .timeline { position: relative; padding-left: 20px; border-left: 2px solid var(--border-color); margin-left: 10px; }
         .timeline-item {
@@ -104,6 +189,11 @@
             position: relative;
             margin-left: 20px;
             border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+        .timeline-item:hover {
+            transform: translateX(10px);
+            border-color: var(--accent);
         }
         .timeline-item::before {
             content: "";
@@ -115,7 +205,10 @@
             background: var(--accent);
             border-radius: 50%;
             border: 4px solid var(--bg-color);
+            transition: background 0.3s;
         }
+        .timeline-item:hover::before { background: var(--code-green); }
+
         .timeline-header {
             display: flex;
             justify-content: space-between;
@@ -158,12 +251,14 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
         .cert-item:hover {
             border-color: var(--accent);
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.02);
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
         .cert-icon {
@@ -171,7 +266,9 @@
             font-size: 2rem;
             min-width: 50px;
             text-align: center;
+            transition: transform 0.4s;
         }
+        .cert-item:hover .cert-icon { transform: rotate(360deg); }
         .cert-info h4 { font-size: 1.1rem; margin-bottom: 4px; color: var(--text-primary); }
         .cert-info span { font-size: 0.9rem; color: var(--text-secondary); display: block; }
         .cert-link-text { font-size: 0.8rem; color: var(--accent); margin-top: 8px; display: inline-block; font-weight: 600; }
@@ -190,8 +287,18 @@
             border: 1px solid var(--border-color);
             transition: 0.3s;
         }
-        .skill-card:hover { border-color: var(--accent); transform: translateY(-5px); }
-        .skill-card i { font-size: 2.5rem; margin-bottom: 15px; color: var(--accent); }
+        .skill-card:hover { 
+            border-color: var(--accent); 
+            transform: translateY(-10px); 
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+        }
+        .skill-card i { 
+            font-size: 2.5rem; 
+            margin-bottom: 15px; 
+            color: var(--accent); 
+            transition: color 0.3s;
+        }
+        .skill-card:hover i { color: var(--code-green); }
         .skill-card h3 { margin-bottom: 10px; font-size: 1.1rem; }
         .skill-card p { font-size: 0.9rem; color: var(--text-secondary); }
 
@@ -212,13 +319,13 @@
 
     <div class="container">
         <nav>
-            <div class="logo">&lt;Preyash /&gt;</div>
+            <div class="logo" onclick="window.scrollTo(0,0)">&lt;Preyash /&gt;</div>
             <div class="nav-links">
                 <a href="#about">About</a>
                 <a href="#experience">Experience</a>
                 <a href="#certs">Certifications</a>
                 <a href="#skills">Skills</a>
-                <a href="mailto:preyashpatel1421@gmail.com">Contact</a>
+                <a href="mailto:pipariyapreyash@gmail.com">Contact</a>
             </div>
         </nav>
 
@@ -227,8 +334,8 @@
             <p>DevOps Engineer | AWS & Terraform Specialist | Kubernetes Enthusiast</p>
             
             <div style="margin-bottom: 2rem;">
-                <a href="https://github.com/preyasH61" target="_blank" class="btn"><i class="fab fa-github"></i> GitHub</a>
-                <a href="mailto:preyashpatel1421@gmail.com" class="btn btn-outline"><i class="fas fa-envelope"></i> Email Me</a>
+                <a href="https://github.com/preyashpatellpreyas" target="_blank" class="btn"><i class="fab fa-github"></i> GitHub</a>
+                <a href="mailto:pipariyapreyash@gmail.com" class="btn btn-outline"><i class="fas fa-envelope"></i> Email Me</a>
             </div>
 
             <div class="terminal">
@@ -238,24 +345,15 @@
                     <div class="dot green"></div>
                     <span style="margin-left: 10px; color: #8b949e; font-size: 0.8rem;">bash — 80x24</span>
                 </div>
-                <div class="terminal-body">
-                    <span class="cmd">$ whoami</span>
-                    <span class="output">> DevOps Engineer specializing in Scalable Cloud Infrastructure & Automation.</span>
-                    
-                    <span class="cmd">$ cat summary.txt</span>
-                    <span class="output">> Proven track record in streamlining deployment pipelines and enhancing system reliability.</span>
-                    <span class="output">> Expert in reducing deployment times and optimizing cloud costs (70% image size reduction).</span>
-                    
-                    <span class="cmd">$ echo $LOCATION</span>
-                    <span class="output">> Ahmedabad, India</span>
-                </div>
+                <div class="terminal-body" id="terminal-content">
+                    </div>
             </div>
         </section>
 
-        <h2 class="section-title" id="experience">Work Experience</h2>
+        <h2 class="section-title hidden-section" id="experience">Work Experience</h2>
         <div class="timeline">
             
-            <div class="timeline-item">
+            <div class="timeline-item hidden-section">
                 <div class="timeline-header">
                     <div>
                         <div class="role">DevOps Engineer</div>
@@ -265,17 +363,17 @@
                 </div>
                 <div class="timeline-content">
                     <ul>
-                        <li>Engineered end-to-end Git pipelines for deploying changes to serverless (AWS Lambda) and containerized (ECS) services[cite: 13].</li>
-                        <li>Architected resilient application environments on AWS ECS, leveraging <strong>Terragrunt</strong> for IaC provisioning[cite: 17].</li>
-                        <li>Optimized Dockerfiles via multi-stage builds, achieving a <strong>70% reduction</strong> in image size and storage costs[cite: 15].</li>
-                        <li>Managed serverless infrastructure for core services including SQS, Lambda, and ECS Fargate[cite: 20].</li>
-                        <li>Maintained Kubernetes clusters on virtual machines for Netskope[cite: 14].</li>
-                        <li>Implemented Blue/Green and Canary deployment strategies for minimal downtime[cite: 21].</li>
+                        <li>Engineered end-to-end Git pipelines for deploying changes to serverless (AWS Lambda) and containerized (ECS) services.</li>
+                        <li>Architected resilient application environments on AWS ECS, leveraging <strong>Terragrunt</strong> for IaC provisioning.</li>
+                        <li>Optimized Dockerfiles via multi-stage builds, achieving a <strong>70% reduction</strong> in image size and storage costs.</li>
+                        <li>Managed serverless infrastructure for core services including SQS, Lambda, and ECS Fargate.</li>
+                        <li>Maintained Kubernetes clusters on virtual machines for Netskope.</li>
+                        <li>Implemented Blue/Green and Canary deployment strategies for minimal downtime.</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="timeline-item">
+            <div class="timeline-item hidden-section">
                 <div class="timeline-header">
                     <div>
                         <div class="role">DevOps Engineer</div>
@@ -285,16 +383,16 @@
                 </div>
                 <div class="timeline-content">
                     <ul>
-                        <li>Deployed scalable architecture for <strong>50+ .NET-based APIs</strong> on AWS Lambda, optimizing resource allocation[cite: 24].</li>
-                        <li>Engineered automated Jenkins pipelines for standardized build/deploy processes[cite: 25].</li>
-                        <li>Managed infrastructure for AI-powered image fine-tuning applications for e-commerce[cite: 27].</li>
-                        <li>Configured Nginx reverse proxies for legacy .NET applications on-premise[cite: 26].</li>
-                        <li>Integrated <strong>SonarQube</strong> to enforce code quality standards and reduce technical debt[cite: 28].</li>
+                        <li>Deployed scalable architecture for <strong>50+ .NET-based APIs</strong> on AWS Lambda, optimizing resource allocation.</li>
+                        <li>Engineered automated Jenkins pipelines for standardized build/deploy processes.</li>
+                        <li>Managed infrastructure for AI-powered image fine-tuning applications for e-commerce.</li>
+                        <li>Configured Nginx reverse proxies for legacy .NET applications on-premise.</li>
+                        <li>Integrated <strong>SonarQube</strong> to enforce code quality standards and reduce technical debt.</li>
                     </ul>
                 </div>
             </div>
 
-            <div class="timeline-item">
+            <div class="timeline-item hidden-section">
                 <div class="timeline-header">
                     <div>
                         <div class="role">DevOps Engineer</div>
@@ -304,18 +402,18 @@
                 </div>
                 <div class="timeline-content">
                     <ul>
-                        <li>Worked on Build Infrastructure to deploy code with optimized costs and High Availability (HA) on AWS[cite: 32].</li>
-                        <li>Completed comprehensive training on industry-leading DevOps tools and technologies[cite: 31].</li>
+                        <li>Worked on Build Infrastructure to deploy code with optimized costs and High Availability (HA) on AWS.</li>
+                        <li>Completed comprehensive training on industry-leading DevOps tools and technologies.</li>
                     </ul>
                 </div>
             </div>
 
         </div>
 
-        <h2 class="section-title" id="certs">Certifications</h2>
+        <h2 class="section-title hidden-section" id="certs">Certifications</h2>
         <div class="cert-list">
             
-            <a href="https://www.credly.com/badges/d7fc5fb4-c270-4e5f-ab18-22f3247bf9e7/linked_in?t=spvl08" target="_blank" class="cert-item">
+            <a href="#" target="_blank" class="cert-item hidden-section">
                 <div class="cert-icon"><i class="fab fa-aws"></i></div>
                 <div class="cert-info">
                     <h4>AWS Solutions Architect Associate</h4>
@@ -324,7 +422,7 @@
                 </div>
             </a>
 
-            <a href="https://www.credly.com/badges/f3cdaffd-4212-49d5-a143-803ba1c4d984/linked_in?t=s0p02i" target="_blank" class="cert-item">
+            <a href="#" target="_blank" class="cert-item hidden-section">
                 <div class="cert-icon"><i class="fas fa-layer-group"></i></div>
                 <div class="cert-info">
                     <h4>HashiCorp Certified: Terraform Associate (003)</h4>
@@ -333,7 +431,7 @@
                 </div>
             </a>
 
-            <a href="https://www.credly.com/badges/f6e76d96-804c-4f3e-a8c1-1e6c01c8ff16/linked_in?t=rw30wk" target="_blank" class="cert-item">
+            <a href="#" target="_blank" class="cert-item hidden-section">
                 <div class="cert-icon"><i class="fab fa-microsoft"></i></div>
                 <div class="cert-info">
                     <h4>Azure Fundamentals (AZ-900)</h4>
@@ -342,7 +440,7 @@
                 </div>
             </a>
 
-            <a href="https://www.linkedin.com/posts/preyash-patel-1451631b6_sc-900-security-compliance-and-identity-activity-7079332096317566976-sGcM?utm_source=share&utm_medium=member_desktop" target="_blank" class="cert-item">
+            <a href="#" target="_blank" class="cert-item hidden-section">
                 <div class="cert-icon"><i class="fas fa-shield-alt"></i></div>
                 <div class="cert-info">
                     <h4>Azure Security & Compliance (SC-900)</h4>
@@ -351,7 +449,7 @@
                 </div>
             </a>
 
-            <a href="https://drive.google.com/file/d/1NFMaQ14M3TEIGDoQXhYVmpoDwVEFaHwV/view?usp=sharing" target="_blank" class="cert-item">
+            <a href="#" target="_blank" class="cert-item hidden-section">
                 <div class="cert-icon"><i class="fab fa-google"></i></div>
                 <div class="cert-info">
                     <h4>Troubleshooting and Debugging Techniques</h4>
@@ -360,7 +458,7 @@
                 </div>
             </a>
 
-            <a href="https://drive.google.com/file/d/1wGvZXRssoIxQe7NuF74t3k-ZThIa0QJd/view?usp=drivesdk" target="_blank" class="cert-item">
+            <a href="#" target="_blank" class="cert-item hidden-section">
                 <div class="cert-icon"><i class="fas fa-user-shield"></i></div>
                 <div class="cert-info">
                     <h4>Introduction to Cybersecurity</h4>
@@ -370,34 +468,34 @@
             </a>
         </div>
 
-        <h2 class="section-title" id="skills">Technical Skills</h2>
+        <h2 class="section-title hidden-section" id="skills">Technical Skills</h2>
         <div class="skills-grid">
-            <div class="skill-card">
+            <div class="skill-card hidden-section">
                 <i class="fab fa-aws"></i>
                 <h3>Cloud</h3>
                 <p>AWS (EC2, Lambda, ECS, S3, CloudFront), Azure</p>
             </div>
-            <div class="skill-card">
+            <div class="skill-card hidden-section">
                 <i class="fas fa-server"></i>
                 <h3>Infra as Code</h3>
                 <p>Terraform, Terragrunt</p>
             </div>
-            <div class="skill-card">
+            <div class="skill-card hidden-section">
                 <i class="fab fa-docker"></i>
                 <h3>Containers</h3>
                 <p>Docker, Kubernetes</p>
             </div>
-            <div class="skill-card">
+            <div class="skill-card hidden-section">
                 <i class="fas fa-code-branch"></i>
                 <h3>CI/CD</h3>
                 <p>Jenkins, GitHub Actions, Azure DevOps</p>
             </div>
-            <div class="skill-card">
+            <div class="skill-card hidden-section">
                 <i class="fas fa-chart-line"></i>
                 <h3>Monitoring</h3>
                 <p>Splunk, Grafana</p>
             </div>
-            <div class="skill-card">
+            <div class="skill-card hidden-section">
                 <i class="fab fa-git-alt"></i>
                 <h3>VCS</h3>
                 <p>Git, GitHub, Azure Repos</p>
@@ -410,6 +508,96 @@
         <p>Preyash Pipariya &copy; 2025</p>
         <p>Built with code, deployed via GitHub Pages.</p>
     </footer>
+
+    <script>
+        // 1. SCROLL REVEAL ANIMATION
+        // This detects when elements come into view and adds the 'show-section' class
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show-section');
+                    observer.unobserve(entry.target); // Only animate once
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.hidden-section').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 2. TERMINAL TYPING EFFECT
+        // This simulates a user typing commands into the terminal
+        const terminalContent = document.getElementById('terminal-content');
+        const lines = [
+            { text: "$ whoami", type: "cmd" },
+            { text: "> DevOps Engineer specializing in Scalable Cloud Infrastructure & Automation.", type: "output" },
+            { text: "$ cat summary.txt", type: "cmd" },
+            { text: "> Proven track record in streamlining deployment pipelines and enhancing system reliability.", type: "output" },
+            { text: "> Expert in reducing deployment times and optimizing cloud costs (70% image reduction).", type: "output" },
+            { text: "$ echo $LOCATION", type: "cmd" },
+            { text: "> Ahmedabad, India", type: "output" }
+        ];
+
+        let lineIndex = 0;
+        let charIndex = 0;
+        let isTyping = false;
+
+        function typeWriter() {
+            if (lineIndex < lines.length) {
+                const currentLine = lines[lineIndex];
+                
+                // Create a new line element if starting a new line
+                if (charIndex === 0) {
+                    const p = document.createElement('div');
+                    p.className = currentLine.type === 'cmd' ? 'cmd' : 'output';
+                    // For style
+                    p.style.marginBottom = currentLine.type === 'cmd' ? '5px' : '15px';
+                    p.style.color = currentLine.type === 'cmd' ? '#4ade80' : '#94a3b8';
+                    p.id = `line-${lineIndex}`;
+                    terminalContent.appendChild(p);
+                    
+                    // Move the blinking cursor to the new line
+                    const cursor = document.getElementById('cursor');
+                    if(cursor) cursor.remove();
+                    
+                    const newCursor = document.createElement('span');
+                    newCursor.className = 'cursor';
+                    newCursor.id = 'cursor';
+                    p.appendChild(newCursor);
+                }
+
+                // Get current element
+                const currentElement = document.getElementById(`line-${lineIndex}`);
+                const cursor = document.getElementById('cursor');
+
+                // Type character
+                if (charIndex < currentLine.text.length) {
+                    // Insert text before cursor
+                    cursor.insertAdjacentText('beforebegin', currentLine.text.charAt(charIndex));
+                    charIndex++;
+                    
+                    // Random typing speed for realism
+                    const delay = currentLine.type === 'cmd' ? Math.random() * 50 + 50 : 10; 
+                    setTimeout(typeWriter, delay);
+                } else {
+                    // Line finished
+                    lineIndex++;
+                    charIndex = 0;
+                    setTimeout(typeWriter, 300); // Pause before next line
+                }
+            }
+        }
+
+        // Start typing when page loads
+        window.onload = typeWriter;
+
+    </script>
 
 </body>
 </html>
