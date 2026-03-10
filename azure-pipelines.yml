@@ -37,3 +37,15 @@ stages:
         deploy:
           steps:
           - script: echo "Deploy to DEV"
+
+- stage: SIT
+  dependsOn: DetectBranch
+  condition: contains(stageDependencies.DetectBranch.Detect.outputs['Detect.detectStep.tagBranch'], 'release')
+  jobs:
+  - deployment: SITDeploy
+    environment: sit
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploy to SIT"
