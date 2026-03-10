@@ -1,8 +1,3 @@
-# HTML
-# Archive your static HTML project and save it with the build record.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
   branches:
     exclude:
@@ -14,9 +9,31 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(build.sourcesDirectory)'
-    includeRootFolder: false
-- task: PublishBuildArtifacts@1
+stages:
+
+# Detect Branch
+- stage: DetectBranch
+  jobs:
+  - job: Detect
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - script: |
+        BRANCH=$(git branch -r --contains $(Build.SourceVersion) | head -n 1)
+        echo "Branch: $BRANCH"
+        echo "##vso[task.setvariable variable=tagBranch;isOutput=true]$BRANCH"
+      name: detectStep
+
+# DEV
+- stage: DEV
+  dependsOn: DetectBranch
+  condition: contains(stageDependencies.DetectBranch.Detect.outputs['Detect.detectStep.tagBranch'], 'feature')
+  jobs:
+  - deployment: DevDeploy
+    environment: dev
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Deploy to DEV"
