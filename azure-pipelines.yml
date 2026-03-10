@@ -1,34 +1,60 @@
+# Correct: separate 'none' for branches, tags block triggers cleanly
 trigger:
   branches:
-    exclude:
-      - '*'
+    include:
+      - none          # effectively disables branch triggers
   tags:
     include:
-      - v*
+      - v*            # triggers on v1.0.0, v2.3.1, etc.
 
 pool:
   vmImage: ubuntu-latest
 
 stages:
 
-# Detect Branch
+# ── Detect which branch this tag was created from ──────────────────────
 - stage: DetectBranch
   jobs:
   - job: Detect
     steps:
     - checkout: self
-      fetchDepth: 0
+      fetchDepth: 0   # full history needed for branch detection
 
     - script: |
-        BRANCH=$(git branch -r --contains $(Build.SourceVersion) | head -n 1)
-        echo "Branch: $BRANCH"
-        echo "##vso[task.setvariable variable=tagBranch;isOutput=true]$BRANCH"
-      name: detectStep
+        # Fetch all remote refs so we can trace the tag
+        git fetch --all --tags
 
-# DEV
+        # Find which remote branch contains this commit
+        BRANCH=$(git branch -r --contains $(Build.SourceVersion) \
+          --format='%(refname:short)' 2>/dev/null \
+          | grep -v HEAD \
+          | head -n 1)
+
+        echo "Detected branch: $BRANCH"
+
+        # Determine target environment
+        if echo "$BRANCH" | grep -q "feature"; then
+          TARGET="feature"
+        elif echo "$BRANCH" | grep -q "release"; then
+          TARGET="release"
+        else
+          TARGET="unknown"
+        fi
+
+        echo "Target: $TARGET"
+
+        # Set output variable — note the job name prefix in the output key
+        echo "##vso[task.setvariable variable=targetEnv;isOutput=true]$TARGET"
+      name: detectStep
+      displayName: 'Detect branch from tag'
+
+# ── DEV deploy (tag on a feature/* branch) ─────────────────────────────
 - stage: DEV
+  displayName: 'Deploy → DEV'
   dependsOn: DetectBranch
-  condition: contains(stageDependencies.DetectBranch.Detect.outputs['Detect.detectStep.tagBranch'], 'feature')
+  # Correct stageDependencies syntax: Stage.Job.stepName.varName
+  condition: |
+    eq(dependencies.DetectBranch.outputs['Detect.detectStep.targetEnv'], 'feature')
   jobs:
   - deployment: DevDeploy
     environment: dev
@@ -36,11 +62,15 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo "Deploy to DEV"
+          - script: echo "✅ Deploying to DEV"
+            displayName: 'Deploy to DEV'
 
+# ── SIT deploy (tag on a release/* branch) ─────────────────────────────
 - stage: SIT
+  displayName: 'Deploy → SIT'
   dependsOn: DetectBranch
-  condition: contains(stageDependencies.DetectBranch.Detect.outputs['Detect.detectStep.tagBranch'], 'release')
+  condition: |
+    eq(dependencies.DetectBranch.outputs['Detect.detectStep.targetEnv'], 'release')
   jobs:
   - deployment: SITDeploy
     environment: sit
@@ -48,4 +78,5 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo "Deploy to SIT"
+          - script: echo "✅ Deploying to SIT"
+            displayName: 'Deploy to SIT'
